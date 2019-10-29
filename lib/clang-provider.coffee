@@ -27,11 +27,25 @@ class ClangProvider
       @codeCompletionAt(editor, symbolPosition.row, symbolPosition.column, language, prefix)
 
   codeCompletionAt: (editor, row, column, language, prefix) ->
-    cwd = path.dirname editor.getPath()
-    args = buildCodeCompletionArgs editor, row, column, language
-    spawnClang cwd, args, editor.getText(), (code, outputs, errors, resolve) =>
-      console.log errors
-      resolve(@handleCompletionResult(outputs, code, prefix))
+    if (@cache_path == editor.getPath() and @cache_row == row and @cache_column == column)
+      @handleCompletionResult(@cache_outputs, @cache_code, prefix)
+    else
+      args = buildCodeCompletionArgs editor, row, column, language
+      callback = (code, outputs, errors, resolve) =>
+        @cache_path = editor.getPath()
+        @cache_row = row
+        @cache_column = column
+        @cache_code = code
+        @cache_outputs = outputs
+        resolve(@handleCompletionResult(outputs, code, prefix))
+      makeBufferedClangProcess editor, args, callback, editor.getText()
+
+  # codeCompletionAt: (editor, row, column, language, prefix) ->
+  #   cwd = path.dirname editor.getPath()
+  #   args = buildCodeCompletionArgs editor, row, column, language
+  #   spawnClang cwd, args, editor.getText(), (code, outputs, errors, resolve) =>
+  #     console.log errors
+  #     resolve(@handleCompletionResult(outputs, code, prefix))
 
   convertCompletionLine: (line, prefix) ->
     contentRe = /^COMPLETION: (.*)/
