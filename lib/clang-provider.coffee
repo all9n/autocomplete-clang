@@ -38,7 +38,6 @@ class ClangProvider
         @cache_code = code
         @cache_outputs = outputs
         resolve(@handleCompletionResult(outputs, code, prefix))
-      makeBufferedClangProcess editor, args, callback, editor.getText()
 
   # codeCompletionAt: (editor, row, column, language, prefix) ->
   #   cwd = path.dirname editor.getPath()
